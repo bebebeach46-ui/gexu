@@ -1,0 +1,27 @@
+name: debug apk
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install NDK
+        run: sdkmanager "ndk;26.1.10909125"
+      - run: chmod +x ./gradlew
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+      - name: Build
+        run: ./gradlew :app:assembleStandardDebug --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gexu-apk
+          path: app/build/outputs/apk/standard/debug/*.apk
